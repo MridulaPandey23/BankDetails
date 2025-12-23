@@ -11,3 +11,4 @@ class User(Base):
     age = Column(Integer)
     gender = Column(String)
     email = Column(String, unique=True, index=True)
+    
