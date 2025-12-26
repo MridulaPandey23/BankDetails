@@ -1,8 +1,9 @@
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import BigInteger, Column, ForeignKey, Integer, String
 from database import Base
 
 class BankDetails(Base):
     __tablename__ = "bank_details"
-    user_id = Column(Integer, ForeignKey("user_details.id"), primary_key=True, nullable=False)
-    acc_num = Column(Integer, unique=True, index=True)
-    bank_nm = Column(String, index=True)
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("user_details.id", ondelete="CASCADE"))
+    acc_num = Column(BigInteger, nullable=True)
+    bank_nm = Column(String(100), nullable=True)
