@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-from database import get_db
+from sqlalchemy.ext.asyncio import AsyncSession
+from database import get_async_db
 
 from schemas.bank_schema import BankSchema
 from schemas.user_schema import UserSchema
@@ -12,29 +12,29 @@ router = APIRouter(prefix="/bank", tags=["Bank"])
 # ---------------- BANK ROUTES ----------------
 
 @router.post("/bank/")
-def create_bank(bank: BankSchema, db: Session = Depends(get_db)):
-    return create_bank_details(bank, db)
+async def create_bank(bank: BankSchema, db: AsyncSession = Depends(get_async_db)):
+    return await create_bank_details(bank, db)
 
 
 @router.get("/bank/")
-def get_all_banks(db: Session = Depends(get_db)):
-    return get_bank_details(db)
+async def get_all_banks(db: AsyncSession = Depends(get_async_db)):
+    return await get_bank_details(db)
 
 @router.get("/user/{user_id}")
-def fetch_user(bank_id: int, db: Session = Depends(get_db)):
-    return get_bank(bank_id, db)
+async def fetch_user(bank_id: int, db: AsyncSession = Depends(get_async_db)):
+    return await get_bank(bank_id, db)
 
 @router.put("/bank/{id}")
-def update_bank(id: int, bank: BankSchema, db: Session = Depends(get_db)):
-    return update_bank_details(id, bank, db)
+async def update_bank(id: int, bank: BankSchema, db: AsyncSession = Depends(get_async_db)):
+    return await update_bank_details(id, bank, db)
 
 @router.delete("/bank/{id}")
-def delete_bank(id: int, db: Session = Depends(get_db)):
-    return delete_bank_details(id, db)
+async def delete_bank(id: int, db: AsyncSession = Depends(get_async_db)):
+    return await delete_bank_details(id, db)
 
 
 # -------- USER + BANK COMBINED --------
 
 @router.get("/userbank/{user_id}")
-def fetch_user_bank(user_id: int, db: Session = Depends(get_db)):
-    return get_user_bank_details(user_id, db)
+async def fetch_user_bank(user_id: int, db: AsyncSession = Depends(get_async_db)):
+    return await get_user_bank_details(user_id, db)

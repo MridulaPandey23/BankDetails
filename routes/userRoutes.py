@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-from database import get_db
+from sqlalchemy.ext.asyncio import AsyncSession
+from database import get_async_db
 
 from schemas.bank_schema import BankSchema
 from schemas.user_schema import UserSchema
@@ -12,25 +12,25 @@ router = APIRouter(prefix="/user", tags=["User"])
 # ---------------- USER ROUTES ----------------
 
 @router.post("/user/")
-def add_user(user: UserSchema, db: Session = Depends(get_db)):
-    return create_user(user, db)
+async def add_user(user: UserSchema, db: AsyncSession = Depends(get_async_db)):
+    return await create_user(user, db)
 
 
 @router.get("/user/{user_id}")
-def fetch_user(user_id: int, db: Session = Depends(get_db)):
-    return get_user(user_id, db)
+async def fetch_user(user_id: int, db: AsyncSession = Depends(get_async_db)):
+    return await  get_user(user_id, db)
 
 
 @router.get("/")
-def fetch_all_users(db: Session = Depends(get_db)):
-    return get_all_users(db)
+async def fetch_all_users(db: AsyncSession = Depends(get_async_db)):
+    return await get_all_users(db)
 
 
-@router.put("/user/{id}")
-def edit_user(user_id: int, user: UserSchema, db: Session = Depends(get_db)):
-    return update_user(user_id, user, db)
+@router.put("/user/{user_id}")
+async def edit_user(user_id: int, user: UserSchema, db: AsyncSession = Depends(get_async_db)):
+    return await update_user(user_id, user, db)
 
 
 @router.delete("/user/{user_id}")
-def remove_user(user_id: int, db: Session = Depends(get_db)):
-    return delete_user(user_id, db)
+async def remove_user(user_id: int, db: AsyncSession = Depends(get_async_db)):
+    return await delete_user(user_id, db)
