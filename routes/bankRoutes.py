@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_async_db
 
-from schemas.bank_schema import BankSchema
-from schemas.user_schema import UserSchema
+from schemas.bankSchema import BankSchema
+from schemas.userSchema import UserSchema
 
 from controllers.bankController import (create_bank_details,get_bank_details,get_bank,update_bank_details,delete_bank_details,get_user_bank_details)
 

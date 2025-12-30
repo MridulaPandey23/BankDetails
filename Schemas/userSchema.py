@@ -1,12 +1,12 @@
 from pydantic import BaseModel
-from schemas.bank_schema import BankSchema
-
+from typing import Optional
+from schemas.userBankSchema import BankSchema
 class UserSchema(BaseModel):
     name : str
     age : int
     gender : str
     email : str
-    bank : BankSchema
+    bank: Optional[BankSchema] = None 
 
     class Config:
         from_attributes = True 

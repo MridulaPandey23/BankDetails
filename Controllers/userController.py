@@ -1,21 +1,26 @@
 from fastapi import HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from model.user import User
-from schemas.user_schema import UserSchema
+from schemas.userSchema import UserSchema
 from database import get_async_db
 from utils.response_wrapper import api_response
 from sqlalchemy import text, select
-
+from services.bankService import BankService
 
 # Create User
 
 async def create_user(user: UserSchema, db: AsyncSession = Depends(get_async_db)):
     try: 
-        query = text("INSERT INTO user_details (name, age, gender, email) VALUES (:name,:age, :gender, :email) RETURNING id, name, age, gender, email")
-        result = await db.execute(query, {"name": user.name, "age": user.age, "gender": user.gender, "email": user.email})
-        await db.commit()
+        query = text("INSERT INTO user_details (name, age, gender, email)VALUES (:name, :age, :gender, :email)RETURNING id, name, age, gender, email")
+        result = await db.execute(query, {"name": user.name,"age": user.age,"gender": user.gender,"email": user.email})
         row = result.mappings().one()
-        return api_response([{"id": row["id"],"name": row["name"], "age": row["age"], "gender": row["gender"], "email": row["email"]}], message = " User added successfully")
+        user_id = row["id"]
+        bank_row= None
+        if user.bank is not None:
+            bank_row = await BankService.create(db=db,user_id=user_id,bank_data=user.bank)
+        await db.commit()
+        return api_response([{"id": row["id"], "name": row["name"], "age": row["age"], "gender": row["gender"], "email": row["email"],
+                               "user_id": bank_row.user_id,"acc_num": bank_row.acc_num,"bank_nm": bank_row.bank_nm}],message="User and bank added successfully")
     except Exception as e:
         print("GENERAL ERROR:", e)
         await db.rollback()
@@ -67,9 +72,8 @@ async def update_user(user_id: int, user: UserSchema, db: AsyncSession = Depends
         await db.rollback()
         raise HTTPException(status_code=500, detail="Failed to update user details")
 
-
-
 # Delete User by ID
+
 async def delete_user(user_id: int, db: AsyncSession = Depends(get_async_db)):
     result = await db.execute(select(User).where(User.id == user_id))
     db_user = result.scalar_one_or_none()
@@ -83,7 +87,4 @@ async def delete_user(user_id: int, db: AsyncSession = Depends(get_async_db)):
     except Exception as e:
         print("GENERAL ERROR:", e)
         await db.rollback()
-        raise HTTPException(status_code=500, detail="Failed to delete user details")  
-
-   
-   
+        raise HTTPException(status_code=500, detail="Failed to delete user details")   
