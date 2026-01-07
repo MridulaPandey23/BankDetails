@@ -1,5 +1,5 @@
 from sqlalchemy.orm import declarative_base
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Text, Boolean
 from database import Base 
 class User(Base):
     __tablename__ = "user_details"  
@@ -9,4 +9,6 @@ class User(Base):
     age = Column(Integer)
     gender = Column(String)
     email = Column(String, unique=True, index=True)
+    password = Column(Text, nullable=True)
+    isverified = Column(Boolean, default=False)
     
