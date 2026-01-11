@@ -1,10 +1,16 @@
 from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
-from jose import jwt, JWTError
-from fastapi import HTTPException, status
+from jose import jwt
 import os
+from dotenv import load_dotenv
+from fastapi import Depends,Header, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import text
+from database import get_async_db
 
 pwd_context = CryptContext(schemes=["bcrypt_sha256"], deprecated="auto")
+
+load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:
@@ -29,9 +35,33 @@ def create_jwt_token(data: dict) -> str:
 
 
 def decode_jwt_token(token: str) -> dict:
-    try:
-        return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    except JWTError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Invalid or expired token")
+    return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
+async def get_current_user(
+    authorization: str = Header(None),
+    db: AsyncSession = Depends(get_async_db)
+):
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Missing token")
 
+    scheme, token = authorization.split()
+
+    if scheme.lower() != "bearer":
+        raise HTTPException(status_code=401, detail="Invalid auth scheme")
+
+    payload = decode_jwt_token(token)
+    user_id = payload.get("user_id")
+
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    result = await db.execute(
+        text("SELECT id, email, name FROM user_details WHERE id=:id"),
+        {"id": user_id}
+    )
+    user = result.mappings().first()
+
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+
+    return user

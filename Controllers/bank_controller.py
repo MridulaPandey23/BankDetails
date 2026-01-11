@@ -1,7 +1,7 @@
 from fastapi import HTTPException, Depends
 from model.bank import BankDetails
 from model.user import User
-from schemas.bankSchema import BankSchema
+from schemas.bank_schema import BankSchema
 from database import get_async_db
 from utils.response_wrapper import api_response
 from sqlalchemy import text, select

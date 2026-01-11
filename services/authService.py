@@ -41,13 +41,34 @@ async def set_password(token: str, new_password: str, db: AsyncSession):
     return {"message": "Password set successfully"}
 
 async def login_user(email: str, password: str, db: AsyncSession):
-    result = await db.execute(text("SELECT id, password, isVerified FROM user_details WHERE email = :email"),{"email": email})
+    result = await db.execute(
+        text("""
+            SELECT id, name, email, password, isVerified
+            FROM user_details
+            WHERE email = :email
+        """),
+        {"email": email}
+    )
+
     user = result.mappings().first()
+
     if not user:
         raise HTTPException(status_code=400, detail="Invalid credentials")
+
     if not user["isverified"]:
         raise HTTPException(status_code=403, detail="Please verify your account")
+
     if not verify_password(password, user["password"]):
         raise HTTPException(status_code=400, detail="Invalid credentials")
+
     token = create_jwt_token({"user_id": user["id"]})
-    return {"access_token": token, "token_type": "bearer"}
+
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": {
+            "id": user["id"],
+            "name": user["name"],
+            "email": user["email"]
+        }
+    }

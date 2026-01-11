@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
-from schemas.userBankSchema import BankSchema
+from schemas.userBank_schema import BankSchema
 class UserSchema(BaseModel):
     name : str
     age : int

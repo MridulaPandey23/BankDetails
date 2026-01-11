@@ -1,0 +1,58 @@
+from fastapi import Request
+from fastapi.responses import JSONResponse
+from jose import JWTError
+from utils.security import decode_jwt_token
+
+class AuthMiddleware:
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http" and scope["method"] == "OPTIONS":
+            await self.app(scope, receive, send)
+            return
+
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        request = Request(scope, receive=receive)
+
+        # 🔓 Public routes
+        public_paths = [
+            "/auth/login",
+            "/auth/register",
+            "/auth/set-password",
+            "/docs",
+            "/openapi.json",
+            "/redoc"
+        ]
+
+        if request.url.path in public_paths:
+            await self.app(scope, receive, send)
+            return
+
+        auth_header = request.headers.get("Authorization")
+
+        if not auth_header or not auth_header.startswith("Bearer "):
+            response = JSONResponse(
+                status_code=401,
+                content={"detail": "Authorization token missing"}
+            )
+            await response(scope, receive, send)
+            return
+
+        token = auth_header.split(" ")[1]
+
+        try:
+            payload = decode_jwt_token(token)
+            scope["user"] = payload
+        except JWTError:
+            response = JSONResponse(
+                status_code=401,
+                content={"detail": "Invalid or expired token"}
+            )
+            await response(scope, receive, send)
+            return
+
+        await self.app(scope, receive, send)

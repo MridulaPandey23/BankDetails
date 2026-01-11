@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_async_db
+from utils.swagger_auth import swagger_security
+from schemas.bank_schema import BankSchema
+from schemas.user_schema import UserSchema
 
-from schemas.bankSchema import BankSchema
-from schemas.userSchema import UserSchema
+from controllers.bank_controller import (create_bank_details,get_bank_details,get_bank,update_bank_details,delete_bank_details,get_user_bank_details)
 
-from controllers.bankController import (create_bank_details,get_bank_details,get_bank,update_bank_details,delete_bank_details,get_user_bank_details)
-
-router = APIRouter(prefix="/bank", tags=["Bank"])
+router = APIRouter(prefix="/bank", tags=["Bank"],dependencies=[Depends(swagger_security)])
 
 # ---------------- BANK ROUTES ----------------
 

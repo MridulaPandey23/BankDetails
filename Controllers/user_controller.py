@@ -1,7 +1,7 @@
 from fastapi import HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from model.user import User
-from schemas.userSchema import UserSchema
+from schemas.user_schema import UserSchema
 from database import get_async_db
 from utils.response_wrapper import api_response
 from sqlalchemy import text, select
